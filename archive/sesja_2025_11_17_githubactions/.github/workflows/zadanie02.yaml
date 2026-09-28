@@ -1,0 +1,19 @@
+name: Zadanie01-02 - DigitalOcean + Terraform Cloud
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+    working-directory: ./DODATKOWE/zadanie01
+
+jobs:
+  zadanie_testing:
+   uses: ./.github/workflows/zadanie01-workflow.yaml
+   with:
+     terraform_lock: false
+   secrets:
+     TF_API_TOKEN: ${{ secrets.TF_API_TOKEN }}
+     DO_TOKEN: ${{ secrets.DO_TOKEN }}
+     AUTO_TFVARS: ${{ secrets.AUTO_TFVARS }}

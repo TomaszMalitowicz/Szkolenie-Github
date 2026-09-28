@@ -1,0 +1,23 @@
+name: 02 - Workeflow evants 
+
+on:
+  push:
+    branches:
+      - feature/cw02
+  pull_request:
+  schedule:
+    - cron: "5 * * * *"     #co 5 minut
+  workflow_dispatch:
+
+jobs:
+  echo:
+    name: "Zobaczy sobie co mnie strigerowalo ${{ github.event_name }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show the trigger ${{ github.event_name }}
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Event name: ---> jest dobiro podstawine ${GITHUB_EVENT_NAME}"
+          echo "--------------"
+          echo "Zmienne SHELL:"
+          env

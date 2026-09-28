@@ -1,0 +1,166 @@
+name: 16_03 - Docker matrix build / test / push (only Docker Hub)
+
+on:
+  push:
+    branches:
+      - cw16
+  pull_request:
+    branches:
+      - cw16
+  workflow_dispatch:
+
+# Globalne ustawienia dla wszystkich stepów run:
+defaults:
+  run:
+    shell: bash
+    working-directory: ./CWICZENIA/16-environments/docker01
+
+env:
+  IMAGE_NAME: github-action-test
+  DOCKERHUB_REPO: piotrskoska/github-action-test
+
+# ===================== JOB 1: BUILD (dev + staging) ======================
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - environment: development
+            app_env: dev
+            image_tag: dev
+          - environment: staging
+            app_env: staging
+            image_tag: staging
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show build matrix entry
+        run: |
+          echo "BUILD for environment: ${{ matrix.environment }}"
+          echo "APP_ENV: ${{ matrix.app_env }}"
+          echo "IMAGE_TAG: ${{ matrix.image_tag }}"
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "piotrskoska" --password-stdin
+
+      - name: Build and push Docker image (non-prod)
+        run: |
+          TAG="${{ matrix.image_tag }}"
+          APP_ENV="${{ matrix.app_env }}"
+          FULL_IMAGE="${DOCKERHUB_REPO}:${TAG}"
+
+          echo "Building image ${IMAGE_NAME}:${TAG} with APP_ENV=${APP_ENV}"
+          docker build \
+            --build-arg APP_ENV="${APP_ENV}" \
+            -t "${IMAGE_NAME}:${TAG}" .
+
+          echo "Tagging ${IMAGE_NAME}:${TAG} -> $FULL_IMAGE"
+          docker tag "${IMAGE_NAME}:${TAG}" "$FULL_IMAGE"
+
+          echo "Pushing $FULL_IMAGE"
+          docker push "$FULL_IMAGE"
+
+# ===================== JOB 2: TEST (dev + staging) =======================
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    strategy:
+      matrix:
+        include:
+          - environment: development
+            app_env: dev
+            image_tag: dev
+          - environment: staging
+            app_env: staging
+            image_tag: staging
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # opcjonalnie możesz się zalogować, jeśli repo w Docker Hub jest prywatne
+      - name: Login to Docker Hub (optional for private repos)
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "piotrskoska" --password-stdin
+
+      - name: Pull and test Docker image from Docker Hub
+        run: |
+          TAG="${{ matrix.image_tag }}"
+          APP_ENV="${{ matrix.app_env }}"
+          FULL_IMAGE="${DOCKERHUB_REPO}:${TAG}"
+
+          echo "Pulling $FULL_IMAGE"
+          docker pull "$FULL_IMAGE"
+
+          echo "Running container for $FULL_IMAGE"
+          OUTPUT="$(docker run --rm "$FULL_IMAGE")"
+          EXPECTED="Hello from environment: ${APP_ENV}"
+
+          echo "Container output: $OUTPUT"
+
+          if [[ "$OUTPUT" != "$EXPECTED" ]]; then
+            echo "❌ TEST FAILED (expected: '$EXPECTED')"
+            exit 1
+          fi
+
+          echo "✅ TEST PASSED for $FULL_IMAGE"
+
+# ===================== JOB 3: PRODUCTION (Docker Hub) ====================
+  production:
+    runs-on: ubuntu-latest
+    # wystartuje dopiero, gdy WSZYSTKIE matrixy jobu "test" przejdą (dev + staging)
+    needs: test
+    environment: production
+
+    env:
+      APP_ENV: prod
+      IMAGE_TAG: production   # tag w Docker Hub: piotrskoska/github-action-test:production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "piotrskoska" --password-stdin
+
+      - name: Build production image
+        run: |
+          echo "Building production image ${IMAGE_NAME}:${IMAGE_TAG} with APP_ENV=${APP_ENV}"
+          docker build \
+            --build-arg APP_ENV="${APP_ENV}" \
+            -t "${IMAGE_NAME}:${IMAGE_TAG}" .
+
+      - name: Test production image
+        run: |
+          echo "Testing production image ${IMAGE_NAME}:${IMAGE_TAG}"
+
+          OUTPUT="$(docker run --rm "${IMAGE_NAME}:${IMAGE_TAG}")"
+          EXPECTED="Hello from environment: ${APP_ENV}"
+
+          echo "Container output: $OUTPUT"
+          if [[ "$OUTPUT" != "$EXPECTED" ]]; then
+            echo "❌ PROD TEST FAILED"
+            exit 1
+          fi
+
+          echo "✅ PROD TEST PASSED"
+
+      - name: Compute FULL_IMAGE for Docker Hub (prod)
+        run: |
+          FULL_IMAGE="${DOCKERHUB_REPO}:${IMAGE_TAG}"
+          echo "FULL_IMAGE=$FULL_IMAGE" >> "$GITHUB_ENV"
+          echo "Prod image: $FULL_IMAGE"
+
+      - name: Tag and push production image
+        run: |
+          echo "Tagging ${IMAGE_NAME}:${IMAGE_TAG} -> $FULL_IMAGE"
+          docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "$FULL_IMAGE"
+          echo "Pushing $FULL_IMAGE"
+          docker push "$FULL_IMAGE"

@@ -1,0 +1,112 @@
+name: 06-01 - Contexts
+
+on:
+  workflow_dispatch:
+
+jobs:
+  show-context:
+    runs-on: ubuntu-latest
+    env:
+      MY_VAR: ${{ vars.MY_VAR }}
+      TAJNY_KLUCZ: ${{ secrets.TAJNY_KLUCZ }}
+    steps:
+      - name: Display information
+        run: |
+          echo "Event Name: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "Run number: ${{ github.run_number }}"
+      - name: Retrieve Variable
+        run: |
+          echo "Variable value: ${{ vars.MY_VAR }}"
+          echo "Evn z Dolar: $MY_VAR"
+          echo "Env value ${{ env.MY_VAR }}"
+      - name: Retrieve Secret
+        run: |
+          echo "Secrets value: ${{ secrets.TAJNY_KLUCZ }}"
+          echo "Evn z Dolar: $TAJNY_KLUCZ"
+          echo "Env value ${{ env.TAJNY_KLUCZ }}"
+          cat << EOF > ./secret.txt
+          ${{ secrets.TAJNY_KLUCZ }}
+          EOF
+          cat secret.txt
+          echo "dodan cos" >> ./secret.txt
+          echo "wayswietlam"
+          mv ./secret.txt ./new_secret.txt
+          cat new_secret.txt
+          pwd
+          echo "----------------------------"
+          echo "nasz secret z strngie"
+          echo "tojeststrogzsectem${{ secrets.TAJNY_KLUCZ }}"
+          echo "---- 2----------------------------"
+          echo "_piotrkoska"
+          echo "tojestzenv${{ env.TAJNY_KLUCZ}}"
+      - name: Cresate Artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: secret-artifact
+          path: ./new_secret.txt
+
+  show-context-kurczak:
+    runs-on: ubuntu-latest
+    environment: kurczak
+    env:
+      MY_VAR: ${{ vars.MY_VAR }}
+    steps:
+      - name: Display information
+        run: |
+          echo "Event Name: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "Run number: ${{ github.run_number }}"
+      - name: Retrieve Variable
+        run: |
+          echo "Variable value: ${{ vars.MY_VAR }}"
+          echo "Evn z Dolar: $MY_VAR"
+          echo "Env value ${{ env.MY_VAR }}"
+
+      - name: Retrieve Secret
+        run: |
+          echo "Secrets value: ${{ secrets.TAJNY_KLUCZ }}"
+          echo "Evn z Dolar: $TAJNY_KLUCZ"
+          echo "Env value ${{ env.TAJNY_KLUCZ }}"
+          cat << EOF > ./secret.txt
+          ${{ secrets.TAJNY_KLUCZ }}
+          EOF
+          cat secret.txt
+
+  show-context-production:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      MY_VAR: ${{ vars.MY_VAR }}
+    steps:
+      - name: Display information
+        run: |
+          echo "Event Name: ${{ github.event_name }}"
+          echo "Ref: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"
+          echo "Actor: ${{ github.actor }}"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "Run number: ${{ github.run_number }}"
+      - name: Retrieve Variable
+        run: |
+          echo "Variable value: ${{ vars.MY_VAR }}"
+          echo "Evn z Dolar: $MY_VAR"
+          echo "Env value ${{ env.MY_VAR }}"
+      - name: Retrieve Secret
+        run: |
+          echo "Secrets value: ${{ secrets.TAJNY_KLUCZ }}"
+          echo "Evn z Dolar: $TAJNY_KLUCZ"
+          echo "Env value ${{ env.TAJNY_KLUCZ }}"
+          cat << EOF > ./secret.txt
+          ${{ secrets.TAJNY_KLUCZ }}
+          EOF
+          cat secret.txt

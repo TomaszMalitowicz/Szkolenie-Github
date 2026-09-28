@@ -1,0 +1,58 @@
+name: 04v01 - Rozwiazanie Workflow uses actions with nodejs.
+
+on:
+ #push:
+  workflow_dispatch:
+  
+jobs:
+  build:
+    name: Build and Test with Node.js
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    #    working-directory: ./CWICZENIA/04-praca-z-zewnetrznymi-akcjami/react-app
+    steps:
+      # uses nie korzysta z default working-directory  
+      - name: Use actions/checkout action
+        uses: actions/checkout@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Sprawdz wersje nodejs
+        run: |
+          node -v
+          npm -v
+        working-directory: ./CWICZENIA/04-praca-z-zewnetrzymi-akcjami/react-app
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ./CWICZENIA/04-praca-z-zewnetrzymi-akcjami/react-app
+      - name: Run Unit Test
+        run: npm run test
+        working-directory: ./CWICZENIA/04-praca-z-zewnetrzymi-akcjami/react-app
+      
+
+  build-windows:
+    name: Build and Test with Node.js on Windows
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./CWICZENIA/04-kurczak/react-app-kurczaczek
+    steps:
+      # uses nie korzysta z default working-directory  
+      - name: Use actions/checkout action
+        uses: actions/checkout@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Sprawdz wersje nodejs
+        run: |
+          node -v
+          npm -v
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Unit Test
+        run: npm run test

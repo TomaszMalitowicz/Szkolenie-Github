@@ -1,0 +1,36 @@
+name: 03 - Workflow Self Hosted Runners v4
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ubuntu-echo:
+    runs-on: new-sh-pk
+    steps:
+      - name: Show OS
+        shell: bash
+        run: |
+          echo "This job is running on an Ubuntu runner."
+          echo "$RUNNER_OS"
+          touch testfile.txt
+
+  windows-echo:
+    needs: ubuntu-echo
+    runs-on: new-sh-pk
+    steps:
+      - name: Show OS
+        run: |
+          echo "This job is running on a Windows runner."
+          echo $env:RUNNER_OS
+          echo "test content" > testfile.txt
+
+  mac-echo:
+    needs: windows-echo
+    runs-on: new-sh-pk
+    steps:
+      - name: Show OS
+        shell: bash
+        run: |
+          echo "This job is running on a MacOS runner."
+          echo "$RUNNER_OS"
+          cat ./testfile.txt

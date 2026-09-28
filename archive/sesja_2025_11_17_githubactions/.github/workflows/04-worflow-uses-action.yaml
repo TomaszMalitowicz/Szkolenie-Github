@@ -1,0 +1,29 @@
+name: 04 - Workflow uses actions
+
+on:
+  workflow_dispatch:
+
+
+
+jobs:
+  ubuntu-echo:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./CWICZENIA
+    steps:
+      # uses nie korzysta z default working-directory  
+      - name: Use actions/checkout action
+        uses: actions/checkout@v3
+      - name: Pokaz zawartoś katalogu roboczego
+        run: |
+          ls -la
+      - name: Pokaz zawartoś katalogu roboczego
+        run: |
+          echo "-----------"
+          cd ..
+      - name: Pokaz zawartoś katalogu roboczego
+        run: |
+          echo "-----------"
+          ls -la

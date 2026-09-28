@@ -1,0 +1,78 @@
+name: 04v01 - Workflow uses actions with nodejs.
+
+on:
+ #push:
+  workflow_dispatch:
+  
+jobs:
+  build:
+    name: Build and Test with Node.js
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./CWICZENIA/04-kurczak/react-app-kurczaczek
+    steps:
+      # uses nie korzysta z default working-directory  
+      - name: Use actions/checkout action
+        uses: actions/checkout@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Sprawdz wersje nodejs
+        run: |
+          node -v
+          npm -v
+          #terraform -version
+      - name: Setu terraform
+        #uses: hashicorp/setup-terraform@v3
+        #with:
+        #  terraform_version: 1.7.5
+        run: |
+          curl -LO https://releases.hashicorp.com/terraform/1.7.5/terraform_1.7.5_linux_amd64.zip
+          sudo apt-get install -y unzip
+          unzip terraform_1.7.5_linux_amd64.zip
+          sudo mv terraform /usr/local/bin/
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: test python and terraform versions
+        run: |
+          python --version
+          terraform version
+
+  build-windows:
+    name: Build and Test with Node.js on Windows
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./CWICZENIA/04-kurczak/react-app-kurczaczek
+    steps:
+      # uses nie korzysta z default working-directory  
+      - name: Use actions/checkout action
+        uses: actions/checkout@v5
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Sprawdz wersje nodejs
+        run: |
+          node -v
+          npm -v
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: test python versions
+        run: |
+          python --version
+      - name: Setu terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
+      - name: test terraform versions
+        run: |
+          terraform version
