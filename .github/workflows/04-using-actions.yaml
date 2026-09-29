@@ -2,7 +2,7 @@ name: "04 – Using Actions"
 on: push
 jobs:
      build:
-       runs-on: ubuntu-latest
+       runs-on: lab
        steps:
          - name: Checkout Code
            uses: actions/checkout@v4
