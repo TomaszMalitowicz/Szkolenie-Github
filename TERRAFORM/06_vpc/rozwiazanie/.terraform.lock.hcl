@@ -1,5 +1,4 @@
-# This file is maintained automatically by "terraform init".
-# Manual edits may be lost in future updates.
+# Provider versions verified for these exercises. Commit this file.
 
 provider "registry.terraform.io/digitalocean/digitalocean" {
   version     = "2.102.0"
